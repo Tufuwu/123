@@ -1,138 +1,122 @@
-# ConvertAPI Ruby Client
+```
+                                  __   _ __      ___  _________
+                                 / /  (_) /____ / _ \/ ___/  _/__
+                                / /__/ / __/ -_) ___/ /___/ // -_)
+                               /____/_/\__/\__/_/   \___/___/\__/
 
+                               Copyright 2015-2024 / EnjoyDigital
 
-[![Gem](https://img.shields.io/gem/v/convert_api.svg)](https://rubygems.org/gems/convert_api)
-[![Build Status](https://github.com/ConvertAPI/convertapi-ruby/actions/workflows/main.yml/badge.svg)](https://github.com/ConvertAPI/convertapi-ruby/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
-
-## Convert your files with our online file conversion API
-
-ConvertAPI helps in converting various file formats. Creating PDF and Images from various sources like Word, Excel, Powerpoint, images, web pages or raw HTML codes. Merge, Encrypt, Split, Repair and Decrypt PDF files and many other file manipulations. You can integrate it into your application in just a few minutes and use it easily.
-
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'convert_api'
+                            A small footprint and configurable PCIe core
+                                     powered by Migen & LiteX
 ```
 
-## Usage
+[![](https://github.com/enjoy-digital/litepcie/workflows/ci/badge.svg)](https://github.com/enjoy-digital/litepcie/actions) ![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)
 
-### Configuration
 
-You can get your credentials at https://www.convertapi.com/a/auth
+[> Intro
+--------
+LitePCIe provides a small footprint and configurable PCIe core.
 
-```ruby
-ConvertApi.configure do |config|
-  config.api_credentials = 'your-api-secret-or-token'
-end
+LitePCIe is part of LiteX libraries whose aims are to lower entry level of
+complex FPGA cores by providing simple, elegant and efficient implementations
+of components used in today's SoC such as Ethernet, SATA, PCIe, SDRAM Controller...
+
+Using Migen to describe the HDL allows the core to be highly and easily configurable.
+
+LitePCIe can be used as LiteX library or can be integrated with your standard
+design flow by generating the verilog rtl that you will use as a standard core.
+
+<p align="center"><img src="https://github.com/enjoy-digital/litepcie/raw/master/doc/architecture.png" width="800"></p>
+
+[> Features
+-----------
+PHY:
+  - Xilinx Ultrascale(+) (up to PCIe Gen3 X16).
+  - Xilinx 7-Series (up to PCIe Gen2 X8).
+  - Intel Cyclone5  (up to PCIe Gen2 X4).
+  - 64/128/256/512-bit datapath.
+  - Clock domain crossing.
+
+Core:
+  - TLP layer.
+  - Reordering.
+  - MSI (Single, Multi-vector)/MSI-X.
+  - Crossbar.
+
+Frontend:
+  - DMA (with Scatter-Gather).
+  - MMAP (AXI/Wishbone Slave/Master).
+  - PTM (on Xilinx 7-Series/Gen2 X1 for now).
+
+Software:
+  - Linux Driver (MMAP and DMA).
+
+[> FPGA Proven
+---------------
+LitePCIe is already used in commercial and open-source designs:
+- 3G-SDI Capture/Playback board: http://www.enjoy-digital.fr/experience/pcie_3g_sdi.jpg
+- SDR MIMO 2x2 board: https://www.amarisoft.com/products-lte-ue-ots-sdr-pcie/#sdr
+- SDR MIMO 4x4 board: http://www.enjoy-digital.fr/experience/pcie_ad937x.jpg
+- SDR CPRI board: http://www.enjoy-digital.fr/experience/pcie_sfp.jpg
+- PCIe TLP sniffer/injector: https://ramtin-amin.fr/#nvmedma
+- and others commercial designs...
+
+[> Possible improvements
+------------------------
+- add standardized interfaces (AXI, Avalon-ST)
+- add Intel Stratix support
+- add Lattice support
+- add more documentation
+- ... See below Support and consulting :)
+
+If you want to support these features, please contact us at florent [AT]
+enjoy-digital.fr.
+
+[> Getting started
+------------------
+1. Install Python 3.6+ and FPGA vendor's development tools.
+2. Install LiteX and the cores by following the LiteX's wiki [installation guide](https://github.com/enjoy-digital/litex/wiki/Installation).
+3. You can find examples of integration of the core with LiteX in LiteX-Boards and in the examples directory.
+
+[> Tests
+--------
+Unit tests are available in ./test/.
+To run all the unit tests:
+```sh
+$ ./setup.py test
 ```
 
-### File conversion
-
-Example to convert file to PDF. All supported formats and options can be found
-[here](https://www.convertapi.com/doc/supported-formats).
-
-```ruby
-result = ConvertApi.convert('pdf', { File: '/path/to/my_file.docx' })
-
-# save to file
-result.file.save('/path/to/save/file.pdf')
+Tests can also be run individually:
+```sh
+$ python3 -m unittest test.test_name
 ```
 
-Other result operations:
+[> License
+----------
+LitePCIe is released under the very permissive two-clause BSD license. Under
+the terms of this license, you are authorized to use LitePCIe for closed-source
+proprietary designs.
+Even though we do not require you to do so, those things are awesome, so please
+do them if possible:
+ - tell us that you are using LitePCIe
+ - cite LitePCIe in publications related to research it has helped
+ - send us feedback and suggestions for improvements
+ - send us bug reports when something goes wrong
+ - send us the modifications and improvements you have done to LitePCIe.
 
-```ruby
-# save all result files to folder
-result.save_files('/path/to/save/files')
+[> Support and consulting
+-------------------------
+We love open-source hardware and like sharing our designs with others.
 
-# get result file io
-io = result.file.io
+LitePCIe is developed and maintained by EnjoyDigital.
 
-# get conversion cost
-conversion_cost = result.conversion_cost 
-```
+If you would like to know more about LitePCIe or if you are already a happy
+user and would like to extend it for your needs, EnjoyDigital can provide standard
+commercial support as well as consulting services.
 
-#### Convert file url
+So feel free to contact us, we'd love to work with you! (and eventually shorten
+the list of the possible improvements :)
 
-```ruby
-result = ConvertApi.convert('pdf', { File: 'https://website/my_file.docx' })
-```
-
-#### Specifying from format
-
-```ruby
-result = ConvertApi.convert(
-  'pdf', 
-  {File: /path/to/my_file'}, 
-  from_format: 'docx'
-)
-```
-
-#### Additional conversion parameters
-
-ConvertAPI accepts extra conversion parameters depending on converted formats. All conversion 
-parameters and explanations can be found [here](https://www.convertapi.com/doc/supported-formats).
-
-```ruby
-result = ConvertApi.convert(
-  'pdf', 
-  {File: /path/to/my_file.docx',
-  PageRange: '1-10',
-  PdfResolution: '150'}
-)
-```
-
-#### Accessing result file properties
-
-You can access result file collection like this:
-
-```ruby
-result = ConvertApi.convert('pdf', { File: 'https://website/my_file.docx' })
-
-puts result.files[0].url
-puts result.files[0].size
-```
-
-### User information
-
-You can always check your usage by fetching [user information](https://www.convertapi.com/doc/user).
-
-```ruby
-user_info = ConvertApi.user
-
-puts user_info['ConversionsConsumed']
-```
-
-### Alternative domain
-
-Set config `base_uri` attribute to use other service domains. Dedicated to the region [domain list](https://www.convertapi.com/doc/servers-location).
-
-```ruby
-ConvertApi.configure do |config|
-  config.base_uri = URI('https://eu-v2.convertapi.com/')
-end
-```
-
-
-### More examples
-
-Find more advanced examples in the [examples/](https://github.com/ConvertAPI/convertapi-ruby/tree/master/examples) folder.
-
-
-## Development
-
-Run `CONVERT_API_SECRET=your_secret rake spec` to run the tests.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/ConvertAPI/convertapi-ruby. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+[> Contact
+----------
+E-mail: florent [AT] enjoy-digital.fr

@@ -10,12 +10,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-
       # Install Tools
       - name: Install Tools
         run: |
           sudo apt-get install wget build-essential
-
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
