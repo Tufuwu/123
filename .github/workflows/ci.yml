@@ -1,27 +1,43 @@
-name: Tufuwu/test2
+name: Python CI
+
 on:
   push:
     branches:
-    - "**/*"
+      - main  # 你可以根据需要修改分支名
   pull_request:
+    branches:
+      - main  # 你可以根据需要修改分支名
 
 jobs:
-  test:
-    runs-on: # this agent type is not supported: [[{"dist"=>"Xenial"}]]
-             ubuntu-latest
+  build:
+    runs-on: ubuntu-20.04  # GitHub Actions使用的Ubuntu版本
+
     steps:
-    - name: checkout
-      uses: actions/checkout@v4.1.0
-    - uses: actions/setup-python@v5.0.0
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
       with:
         python-version: '3.6'
+        
+    - name: Install Tools
+      run: |
+        sudo apt-get install wget build-essential python3
+        pip3 install setuptools
 
     - name: Install dependencies
       run: |
+        # Get Migen / LiteX / Cores
         cd ~/
         wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
         python3 litex_setup.py init install
-        cd ${{ github.workspace }}
+        
+        # Install the version being tested
+        cd $GITHUB_WORKSPACE
         python3 setup.py install
-        cd ${{ github.workspace }}
-        python setup.py test
+
+    - name: Run tests
+      run: |
+        cd $GITHUB_WORKSPACE
+        python3 setup.py test
