@@ -22,11 +22,6 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
           python3 litex_setup.py init install --user
+          python3 setup.py develop --user
+          python3 setup.py test
 
-      # Install Project
-      - name: Install Project
-        run: python3 setup.py develop --user
-
-      # Test
-      - name: Run Tests
-        run: python3 setup.py test
