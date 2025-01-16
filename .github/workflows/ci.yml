@@ -15,11 +15,10 @@ jobs:
     - uses: actions/setup-python@v5.0.0
       with:
         python-version: '3.6'
-    - name: Run tests
-       run: |
-        wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
-        python3 litex_setup.py init install
-        cd ${{ github.workspace }}
-        python3 setup.py install
-        cd ${{ github.workspace }}
-        python setup.py test
+    - run: cd ~/
+    - run: wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
+    - run: python3 litex_setup.py init install
+    - run: cd ${{ github.workspace }}
+    - run: python3 setup.py install
+    - run: cd ${{ github.workspace }}
+    - run: python setup.py test
