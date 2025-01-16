@@ -29,15 +29,15 @@ jobs:
     - name: Install dependencies
       run: |
         # Get Migen / LiteX / Cores
-        cd ~/
+      
         wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
         python3 litex_setup.py init install
         
         # Install the version being tested
-        cd $GITHUB_WORKSPACE
+     
         run: python3 setup.py develop
 
     - name: Run tests
       run: |
-        cd $GITHUB_WORKSPACE
+      
         python3 setup.py test
