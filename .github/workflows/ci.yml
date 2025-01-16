@@ -35,7 +35,7 @@ jobs:
         
         # Install the version being tested
      
-        run: python3 setup.py develop
+        run: python3 setup.py develop--user
 
     - name: Run tests
       run: |
