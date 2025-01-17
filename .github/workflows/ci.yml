@@ -36,7 +36,7 @@ jobs:
         
         # Install the version being tested
         #cd $GITHUB_WORKSPACE
-        python3 setup.py install --user
+        python3 setup.py develop --user
 
     - name: Run tests
       run: |
