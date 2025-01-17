@@ -20,11 +20,11 @@ jobs:
       - name: Install LiteX
         run: |
           wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
-          python3 litex_setup.py init install --user
+          python3 litex_setup.py init install 
 
       # Install Project
       - name: Install Project
-        run: python3 setup.py develop --user
+        run: python3 setup.py develop 
 
       # Test
       - name: Run Tests
