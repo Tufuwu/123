@@ -16,9 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-
-
-      # Install Tools
+    # Install Tools
     - name: Install Tools
       run: |
         sudo apt-get install wget build-essential python3
@@ -27,15 +25,15 @@ jobs:
     - name: Install dependencies
       run: |
         # Get Migen / LiteX / Cores
-        #cd ~/
+        cd ~/
         wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
-        python3 litex_setup.py init install --user
+        python3 litex_setup.py init install
         
         # Install the version being tested
-        #cd $GITHUB_WORKSPACE
-        python3 setup.py develop --user
+        cd $GITHUB_WORKSPACE
+        python3 setup.py install
 
     - name: Run tests
       run: |
-        #cd $GITHUB_WORKSPACE
+        cd $GITHUB_WORKSPACE
         python3 setup.py test
