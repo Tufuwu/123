@@ -16,11 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Install Tools
-    - name: Install Tools
-      run: |
-        sudo apt-get install wget build-essential python3
-        pip3 install setuptools
+
 
     - name: Install dependencies
       run: |
