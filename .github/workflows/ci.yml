@@ -1,0 +1,35 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - main  # 你可以根据需要修改分支名
+  pull_request:
+    branches:
+      - main  # 你可以根据需要修改分支名
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04  # GitHub Actions使用的Ubuntu版本
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+
+
+    - name: Install dependencies
+      run: |
+        # Get Migen / LiteX / Cores
+        cd ~/
+        wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
+        python3 litex_setup.py init install --user
+        
+        # Install the version being tested
+        cd $GITHUB_WORKSPACE
+        python3 setup.py install --user
+
+    - name: Run tests
+      run: |
+        cd $GITHUB_WORKSPACE
+        python3 setup.py test
