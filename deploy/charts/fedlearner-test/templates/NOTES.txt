@@ -1,1 +1,0 @@
-The fedlearner/fedlearner-add-on charts have been installed successfully.
