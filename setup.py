@@ -1,29 +1,32 @@
-#!/usr/bin/env python
+import os
+import platform
 from setuptools import setup, find_packages
-import kademlia
+import time
+
+with open("README.md", "r") as fh:
+  long_description = fh.read()
+
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
+def get_version():
+    base = "1.5"
+    day = time.strftime('%Y%m%d', time.localtime())
+    return '%s-dev%s'%(base, day)
 
 setup(
-    name="kademlia",
-    version=kademlia.__version__,
-    description="Kademlia is a distributed hash table for decentralized peer-to-peer computer networks.",
-    long_description=open("README.md", encoding='utf-8').read(),
-    long_description_content_type='text/markdown',
-    author="Brian Muller",
-    author_email="bamuller@gmail.com",
-    license="MIT",
-    url="http://github.com/bmuller/kademlia",
+    name='fedlearner',
+    version=get_version(),
     packages=find_packages(),
-    install_requires=open("requirements.txt").readlines(),
-    classifiers=[
-      "Development Status :: 5 - Production/Stable",
-      "Intended Audience :: Developers",
-      "License :: OSI Approved :: MIT License",
-      "Operating System :: OS Independent",
-      "Programming Language :: Python",
-      "Programming Language :: Python :: 3",
-      "Programming Language :: Python :: 3.5",
-      "Programming Language :: Python :: 3.6",
-      "Programming Language :: Python :: 3.7",
-      "Topic :: Software Development :: Libraries :: Python Modules",
-    ]
+    include_package_data=True,
+    author='Fedlearner Contributors',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    install_requires=required,
+     classifiers=[
+         "Programming Language :: Python :: 3",
+         "License :: OSI Approved :: Apache Software License",
+         "Operating System :: MacOS",
+         "Operating System :: POSIX :: Linux"
+     ],
 )

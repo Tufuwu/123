@@ -1,74 +1,24 @@
-# Python Distributed Hash Table
-[![Build Status](https://github.com/bmuller/kademlia/actions/workflows/ci.yml/badge.svg)](https://github.com/bmuller/kademlia/actions/workflows/ci.yml)
-[![Docs Status](https://readthedocs.org/projects/kademlia/badge/?version=latest)](http://kademlia.readthedocs.org)
+# Fedlearner™
+Fedlearner is collaborative machine learning framework that enables joint modeling of data distributed between institutions.
 
-**Documentation can be found at [kademlia.readthedocs.org](http://kademlia.readthedocs.org/).**
 
-This library is an asynchronous Python implementation of the [Kademlia distributed hash table](http://en.wikipedia.org/wiki/Kademlia).  It uses the [asyncio library](https://docs.python.org/3/library/asyncio.html) in Python 3 to provide asynchronous communication.  The nodes communicate using [RPC over UDP](https://github.com/bmuller/rpcudp) to communiate, meaning that it is capable of working behind a [NAT](http://en.wikipedia.org/wiki/Network_address_translation).
 
-This library aims to be as close to a reference implementation of the [Kademlia paper](http://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf) as possible.
 
-## Installation
+## Trademark Usage Policy
 
-```
-pip install kademlia
-```
+Fedlearner welcomes everyone to build on or modify Fedlearner open source software for your own project.
+The license of the software doesn’t grant permission to use trademarks or product names in respect to the licensor.
+However, you may use the trademark or product name if,
+- You use a wordmark to refer to Fedlearner program, product or technology; 
+- You use a wordmark in text to indicate the compatibility of your project with Fedlearner project; 
+- You use a wordmark in text to indicate your project is built based on Fedlearner technology.
+ 
+If you would like to use the Fedlearner trademark,
+- to combine a trademark with your own brand, trademark, product, project, service or domain name; 
+- for any other commercial use;
+- as a verb or noun, rather than only as an adjective followed by the generic name/noun;
+- in a modified, abbreviated or altered form, or in the plural or possessive form; 
+please feel free to contact us for an express permission. 
+ 
+If you use a trademark in a way not set forth above, or for any illegal purpose with the program, the licensor reserves the right in its sole discretion to terminate or modify your permission to display or use a trademark and to take action against any use that does not conform to these terms and conditions, or violates applicable law.
 
-## Usage
-*This assumes you have a working familiarity with [asyncio](https://docs.python.org/3/library/asyncio.html).*
-
-Assuming you want to connect to an existing network:
-
-```python
-import asyncio
-from kademlia.network import Server
-
-async def run():
-    # Create a node and start listening on port 5678
-    node = Server()
-    await node.listen(5678)
-
-    # Bootstrap the node by connecting to other known nodes, in this case
-    # replace 123.123.123.123 with the IP of another node and optionally
-    # give as many ip/port combos as you can for other nodes.
-    await node.bootstrap([("123.123.123.123", 5678)])
-
-    # set a value for the key "my-key" on the network
-    await node.set("my-key", "my awesome value")
-
-    # get the value associated with "my-key" from the network
-    result = await node.get("my-key")
-    print(result)
-
-asyncio.run(run())
-```
-
-## Initializing a Network
-If you're starting a new network from scratch, just omit the `node.bootstrap` call in the example above.  Then, bootstrap other nodes by connecting to the first node you started.
-
-See the examples folder for a first node example that other nodes can bootstrap connect to and some code that gets and sets a key/value.
-
-## Logging
-This library uses the standard [Python logging library](https://docs.python.org/3/library/logging.html).  To see debut output printed to STDOUT, for instance, use:
-
-```python
-import logging
-
-log = logging.getLogger('kademlia')
-log.setLevel(logging.DEBUG)
-log.addHandler(logging.StreamHandler())
-```
-
-## Running Tests
-To run tests:
-
-```
-pip install -r dev-requirements.txt
-pytest
-```
-
-## Reporting Issues
-Please report all issues [on github](https://github.com/bmuller/kademlia/issues).
-
-## Fidelity to Original Paper
-The current implementation should be an accurate implementation of all aspects of the paper save one - in Section 2.3 there is the requirement that the original publisher of a key/value republish it every 24 hours.  This library does not do this (though you can easily do this manually).

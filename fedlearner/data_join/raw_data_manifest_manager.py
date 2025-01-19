@@ -1,0 +1,396 @@
+# Copyright 2020 The FedLearner Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# coding: utf-8
+
+import threading
+import logging
+
+from google.protobuf import text_format
+from fedlearner.common import data_join_service_pb2 as dj_pb
+from fedlearner.common import common_pb2 as common_pb
+from fedlearner.data_join import common
+
+class RawDataManifestManager(object):
+    def __init__(self, kvstore, data_source, batch_mode=False):
+        self._lock = threading.Lock()
+        self._local_manifest = {}
+        self._kvstore = kvstore
+        self._data_source = data_source
+        self._raw_data_sub_dir = self._data_source.raw_data_sub_dir
+        self._existed_fpath = {}
+        self._raw_data_latest_timestamp = {}
+        self._partition_num = data_source.data_source_meta.partition_num
+        self._batch_mode = batch_mode
+        if self._partition_num <= 0:
+            raise ValueError(
+                "partition num must be positive: {}".format(self._partition_num)
+            )
+        for partition_id in range(self._partition_num):
+            self._local_manifest[partition_id] = None
+            self._raw_data_latest_timestamp[partition_id] = None
+            self._sync_manifest(partition_id)
+        if self._batch_mode:
+            self._init_batch_mode()
+
+    def _init_batch_mode(self):
+        assert common_pb.DataSourceState.UnKnown < self._data_source.state \
+                < common_pb.DataSourceState.Ready, \
+                "DataSouce should in Init or Processing State"
+        for partition_id in range(self._partition_num):
+            manifest = self._sync_manifest(partition_id)
+            if manifest.finished:
+                manifest.finished = False
+                logging.warning("reset raw data finish for partition "\
+                                "%d for batch mode", partition_id)
+            if manifest.sync_example_id_rep.state == \
+                    dj_pb.SyncExampleIdState.Synced:
+                manifest.sync_example_id_rep.state = \
+                        dj_pb.SyncExampleIdState.UnSynced
+                manifest.sync_example_id_rep.rank_id = -1
+                logging.warning("reset sync example id for partition "\
+                                "%d for batch mode", partition_id)
+            if manifest.join_example_rep.state == \
+                    dj_pb.JoinExampleState.Joined:
+                manifest.join_example_rep.state = \
+                        dj_pb.JoinExampleState.UnJoined
+                manifest.join_example_rep.rank_id = -1
+                logging.warning("reset join example for partition "\
+                                "%d for batch mode", partition_id)
+            self._update_manifest(manifest)
+            sub_file_cnt = self._try_to_sub_raw_data(partition_id)
+            logging.warning("Subscribed %d new file for partition %d",
+                            sub_file_cnt, partition_id)
+            manifest = self._sync_manifest(partition_id)
+            manifest.finished = True
+            self._update_manifest(manifest)
+
+    def alloc_sync_exampld_id(self, rank_id, partition_id=None):
+        if partition_id is not None:
+            self._check_partition_id(partition_id)
+        with self._lock:
+            return self._alloc_partition(
+                    'sync_example_id_rep', dj_pb.SyncExampleIdState.UnSynced,
+                     dj_pb.SyncExampleIdState.Syncing, rank_id, partition_id
+                )
+
+    def alloc_join_example(self, rank_id, partition_id=None):
+        if partition_id is not None:
+            self._check_partition_id(partition_id)
+        with self._lock:
+            return self._alloc_partition(
+                    'join_example_rep', dj_pb.JoinExampleState.UnJoined,
+                     dj_pb.JoinExampleState.Joining, rank_id, partition_id
+                )
+
+    def finish_sync_example_id(self, rank_id, partition_id):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            if self._is_data_join_leader():
+                manifest = self._sync_manifest(partition_id)
+                if not manifest.finished:
+                    raise RuntimeError(
+                            "Failed to finish sync example id for " \
+                            "partition {} since raw data is not " \
+                            "finished".format(partition_id)
+                        )
+            self._finish_partition(
+                    'sync_example_id_rep', dj_pb.SyncExampleIdState.Syncing,
+                     dj_pb.SyncExampleIdState.Synced, rank_id, partition_id
+                )
+
+    def finish_join_example(self, rank_id, partition_id):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            manifest = self._sync_manifest(partition_id)
+            assert manifest is not None, \
+                "manifest must be not None for a valid partition"
+            if manifest.sync_example_id_rep.state != \
+                    dj_pb.SyncExampleIdState.Synced:
+                raise RuntimeError(
+                        "not allow finish join example for " \
+                        "partition {} since sync example id is " \
+                        "not finished".format(partition_id)
+                    )
+            if not self._is_data_join_leader() and not manifest.finished:
+                raise RuntimeError(
+                        "Failed to finish join example for partition {} "\
+                        "since raw data is not finished".format(partition_id)
+                    )
+            self._finish_partition(
+                    'join_example_rep', dj_pb.JoinExampleState.Joining,
+                     dj_pb.JoinExampleState.Joined, rank_id, partition_id
+                )
+
+    def finish_raw_data(self, partition_id):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            assert not self._batch_mode, \
+                "finish_raw_data is not support in batch mode"
+            manifest = self._sync_manifest(partition_id)
+            if not manifest.finished:
+                manifest.finished = True
+                self._update_manifest(manifest)
+
+    def add_raw_data(self, partition_id, raw_data_metas, dedup):
+        assert len(self._raw_data_sub_dir) == 0
+        self._check_partition_id(partition_id)
+        with self._lock:
+            assert not self._batch_mode, \
+                "add_raw_data is not support in batch mode"
+            manifest = self._sync_manifest(partition_id)
+            if manifest.finished:
+                raise RuntimeError("forbid add raw data since partition {} "\
+                                    "has finished!".format(partition_id))
+            input_fpath = set()
+            add_candidates = []
+            for raw_date_meta in raw_data_metas:
+                if raw_date_meta.file_path in self._existed_fpath or \
+                        raw_date_meta.file_path in input_fpath:
+                    if not dedup:
+                        raise RuntimeError("file {} has been added"\
+                                           .format(raw_date_meta.file_path))
+                    continue
+                input_fpath.add(raw_date_meta.file_path)
+                add_candidates.append(raw_date_meta)
+            self._store_raw_data_metas(partition_id, add_candidates)
+
+    def forward_peer_dumped_index(self, partition_id, peer_dumped_index):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            manifest = self._sync_manifest(partition_id)
+            if manifest.peer_dumped_index < peer_dumped_index:
+                manifest.peer_dumped_index = peer_dumped_index
+                self._update_manifest(manifest)
+
+    def list_all_manifest(self):
+        with self._lock:
+            manifest_map = {}
+            for partition_id in self._local_manifest:
+                manifest_map[partition_id] = self._sync_manifest(partition_id)
+            return manifest_map
+
+    def get_manifest(self, partition_id):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            return self._sync_manifest(partition_id)
+
+    def get_raw_date_latest_timestamp(self, partition_id):
+        self._check_partition_id(partition_id)
+        with self._lock:
+            self._sync_manifest(partition_id)
+            return self._raw_data_latest_timestamp[partition_id]
+
+    def cleanup_meta_data(self):
+        with self._lock:
+            data_source_name = self._data_source.data_source_meta.name
+            kvstore_base_key = \
+                common.data_source_kvstore_base_dir(data_source_name)
+            self._kvstore.delete_prefix(kvstore_base_key)
+
+    def sub_new_raw_data(self, req_part=None):
+        with self._lock:
+            for partition_id in range(self._partition_num):
+                if req_part is None or req_part == partition_id:
+                    self._try_to_sub_raw_data(partition_id)
+
+    def _try_to_sub_raw_data(self, partition_id):
+        manifest = self._sync_manifest(partition_id)
+        if manifest.finished or len(self._raw_data_sub_dir) == 0:
+            return 0
+        next_sub_index = manifest.next_raw_data_sub_index
+        add_candidates = []
+        raw_data_finished = False
+        prev_next_sub_index = manifest.next_raw_data_sub_index
+        while True:
+            kvstore_key = common.raw_data_pub_kvstore_key(
+                    self._raw_data_sub_dir,
+                    partition_id, next_sub_index
+                )
+            pub_data = self._kvstore.get_data(kvstore_key)
+            if pub_data is None:
+                break
+            raw_data_pub = text_format.Parse(pub_data, dj_pb.RawDatePub(),
+                                             allow_unknown_field=True)
+            if raw_data_pub.HasField('raw_data_meta'):
+                add_candidates.append(raw_data_pub.raw_data_meta)
+                next_sub_index += 1
+            elif raw_data_pub.HasField('raw_data_finished'):
+                logging.warning("meet finish pub at pub index %d for "\
+                                "partition %d",
+                                next_sub_index, partition_id)
+                raw_data_finished = True
+                break
+        self._store_raw_data_metas(partition_id, add_candidates)
+        new_manifest = self._sync_manifest(partition_id)
+        new_manifest.next_raw_data_sub_index = next_sub_index
+        new_manifest.finished = raw_data_finished
+        self._update_manifest(new_manifest)
+        return next_sub_index - prev_next_sub_index
+
+    def _store_raw_data_metas(self, partition_id, new_raw_data_metas):
+        if len(new_raw_data_metas) > 0:
+            manifest = self._sync_manifest(partition_id)
+            self._local_manifest[partition_id] = None
+            process_index = manifest.next_process_index
+            for raw_date_meta in new_raw_data_metas:
+                kvstore_key = common.raw_data_meta_kvstore_key(
+                        self._data_source.data_source_meta.name,
+                        partition_id, process_index
+                    )
+                raw_date_meta.start_index = -1
+                data = text_format.MessageToString(raw_date_meta)
+                self._kvstore.set_data(kvstore_key, data)
+                self._existed_fpath[raw_date_meta.file_path] = \
+                        (partition_id, process_index)
+                self._update_raw_data_latest_timestamp(
+                        partition_id, raw_date_meta.timestamp
+                    )
+                process_index += 1
+            if manifest.next_process_index != process_index:
+                manifest.next_process_index = process_index
+                self._update_manifest(manifest)
+            else:
+                self._local_manifest[partition_id] = manifest
+
+    def _is_data_join_leader(self):
+        return self._data_source.role == common_pb.FLRole.Leader
+
+    def _alloc_partition(self, field_name, src_state,
+                         target_state, rank_id, partition_id=None):
+        if partition_id is None:
+            for ptn_id in self._local_manifest:
+                manifest = self._sync_manifest(ptn_id)
+                assert manifest is not None, \
+                    "manifest must be not None for a valid partition"
+                field = getattr(manifest, field_name)
+                if field.state == target_state and field.rank_id == rank_id:
+                    partition_id = ptn_id
+                    break
+                if field.state == src_state and partition_id is None:
+                    partition_id = ptn_id
+        if partition_id is not None:
+            manifest = self._sync_manifest(partition_id)
+            field = getattr(manifest, field_name)
+            if field.state == src_state:
+                field.state = target_state
+                field.rank_id = rank_id
+                self._update_manifest(manifest)
+            elif field.state == target_state:
+                if field.rank_id != rank_id:
+                    raise RuntimeError(
+                            "field {} of partition {} has been allcate " \
+                            "to {} as state {}".format(field_name, partition_id,
+                            field.rank_id, field.state)
+                        )
+            else:
+                raise RuntimeError(
+                        "field {} of partition {} at state {}".format(
+                            field_name, partition_id, field.state)
+                    )
+            return manifest
+        return None
+
+    def _finish_partition(self, field_name, src_state,
+                          target_state, rank_id, partition_id):
+        manifest = self._sync_manifest(partition_id)
+        field = getattr(manifest, field_name)
+        if field.state == target_state:
+            return
+        if field.state != src_state:
+            raise RuntimeError(
+                    "partition {} is not allow finished".format(partition_id)
+                )
+        if field.rank_id != rank_id:
+            raise RuntimeError(
+                    "partition {} has been allocated to {}".format(
+                    partition_id, field.rank_id)
+                )
+        field.state = target_state
+        self._update_manifest(manifest)
+
+    def _get_manifest(self, partition_id):
+        manifest_kvstore_key = common.partition_manifest_kvstore_key(
+                self._data_source.data_source_meta.name,
+                partition_id
+            )
+        manifest_data = self._kvstore.get_data(manifest_kvstore_key)
+        if manifest_data is not None:
+            return text_format.Parse(manifest_data, dj_pb.RawDataManifest(),
+                                     allow_unknown_field=True)
+        return None
+
+    def _update_manifest(self, manifest):
+        partition_id = manifest.partition_id
+        manifest_kvstore_key = common.partition_manifest_kvstore_key(
+                self._data_source.data_source_meta.name,
+                partition_id
+            )
+        self._local_manifest[partition_id] = None
+        self._kvstore.set_data(manifest_kvstore_key,
+                            text_format.MessageToString(manifest))
+        self._local_manifest[partition_id] = manifest
+
+    def _sync_manifest(self, partition_id):
+        assert partition_id in self._local_manifest, \
+            "partition {} should in local manifest".format(partition_id)
+        if self._local_manifest[partition_id] is None:
+            manifest = self._get_manifest(partition_id)
+            if manifest is None:
+                manifest = dj_pb.RawDataManifest()
+                manifest.sync_example_id_rep.rank_id = -1
+                manifest.join_example_rep.rank_id = -1
+                manifest.partition_id = partition_id
+                self._update_manifest(manifest)
+            self._process_next_process_index(partition_id, manifest)
+        return self._local_manifest[partition_id]
+
+    def _check_partition_id(self, partition_id):
+        if partition_id < 0 or partition_id >= self._partition_num:
+            raise IndexError(
+                    "partition id {} is out of range".format(partition_id)
+                )
+
+    def _process_next_process_index(self, partition_id, manifest):
+        assert manifest is not None and manifest.partition_id == partition_id
+        next_process_index = manifest.next_process_index
+        while True:
+            meta_kvstore_key = \
+                    common.raw_data_meta_kvstore_key(
+                            self._data_source.data_source_meta.name,
+                            partition_id, next_process_index
+                        )
+            data = self._kvstore.get_data(meta_kvstore_key)
+            if data is None:
+                break
+            meta = text_format.Parse(data, dj_pb.RawDataMeta(),
+                                     allow_unknown_field=True)
+            self._existed_fpath[meta.file_path] = \
+                    (partition_id, next_process_index)
+            self._update_raw_data_latest_timestamp(partition_id,
+                                                   meta.timestamp)
+            next_process_index += 1
+        if next_process_index != manifest.next_process_index:
+            manifest.next_process_index = next_process_index
+            self._update_manifest(manifest)
+        else:
+            self._local_manifest[partition_id] = manifest
+
+    def _update_raw_data_latest_timestamp(self, partition_id, ntimestamp):
+        otimestamp = self._raw_data_latest_timestamp[partition_id]
+        if otimestamp is None or \
+                (ntimestamp.seconds > otimestamp.seconds or
+                    (ntimestamp.seconds == otimestamp.seconds and
+                     ntimestamp.nanos > otimestamp.nanos)):
+            self._raw_data_latest_timestamp[partition_id] = ntimestamp

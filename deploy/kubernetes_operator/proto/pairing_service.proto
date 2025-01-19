@@ -1,0 +1,61 @@
+/* Copyright 2020 The FedLearner Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+package fedlearner;
+
+option go_package = "github.com/bytedance/fedlearner/deploy/kubernetes_operator/proto;proto";
+
+service PairingService {
+    rpc Ping (google.protobuf.Empty) returns (Status);
+    rpc Register (RegisterRequest) returns (Status);
+    rpc Pair (PairRequest) returns (Status);
+    rpc Finish (FinishRequest) returns (Status);
+    rpc ShutDown (ShutDownRequest) returns (Status);
+}
+
+message Status {
+    int32 code = 1;
+    string error_message = 2;
+}
+
+message RegisterRequest {
+    string app_id = 1;
+    string role = 2; // Followers
+    repeated Pair pairs = 3;
+}
+
+message PairRequest {
+    string app_id = 1;
+    repeated Pair pairs = 2;
+}
+
+message Pair {
+    string type = 1;
+    repeated string leader_ids = 2;
+    repeated string follower_ids = 3;
+}
+
+message FinishRequest {
+    string app_id = 1;
+    string role = 2; // Leader or Followers
+}
+
+message ShutDownRequest {
+    string app_id = 1;
+    string role = 2; // Leader or Followers
+}

@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package fedlearner.common;
+
+message RegressionTreeNodeProto {
+    int32 node_id = 1;
+    int32 left_child = 2;
+    int32 right_child = 3;
+    int32 parent = 4;
+
+    bool is_owner = 5;
+    int32 owner_id = 6;
+    int32 feature_id = 7;
+    bool is_cat_feature = 11;
+    float threshold = 8;
+    repeated int32 cat_threshold = 12;
+    bool default_left = 10;
+
+    float weight = 9;
+}
+
+message PartitionInfo {
+    int32 num_partitions = 1;
+};
+
+message RegressionTreeProto {
+    repeated RegressionTreeNodeProto nodes = 1;
+    repeated float feature_importance = 3;
+};
+
+message BoostingTreeEnsambleProto {
+    repeated RegressionTreeProto trees = 1;
+    repeated float feature_importance = 2;
+    repeated string feature_names = 3;
+    repeated string cat_feature_names = 4;
+};
+
+message EncryptedNumbers {
+    repeated bytes ciphertext = 1;
+}
+
+message Histograms {
+    repeated EncryptedNumbers hists = 2;
+}
+
+message SplitInfo {
+    int32 node_id = 1;
+    float gain = 2;
+    int32 owner_id = 3;
+    int32 feature_id = 4;
+    repeated int32 split_point = 5;
+    bool default_left = 10;
+    float left_weight = 6;
+    float right_weight = 7;
+    repeated int32 left_samples = 8;
+    repeated int32 right_samples = 9;
+}
+
+message VerifyParams {
+    repeated string example_ids = 1;
+    float learning_rate = 2;
+    int32 max_iters = 3;
+    int32 max_depth = 4;
+    int32 max_leaves = 5;
+    float l2_regularization = 6;
+    int32 max_bins = 7;
+    string grow_policy = 8;
+    bool validation = 9;
+    int32 num_trees = 10;
+    bool leader_no_data = 11;
+    bool enable_packing = 12;
+    string predict_type_value = 13;
+}

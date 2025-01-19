@@ -1,0 +1,160 @@
+/* Copyright 2021 The FedLearner Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+import "fedlearner_webconsole/proto/common.proto";
+import "fedlearner_webconsole/proto/workflow_definition.proto";
+package fedlearner_webconsole.proto;
+
+
+message ProjAuthInfo {
+    string project_name = 1;
+    string target_domain = 2;
+    string auth_token = 3;
+}
+message JobDetail{
+    string name = 1;
+    string state = 2;
+    string pods = 3;
+}
+
+message CheckConnectionRequest {
+    ProjAuthInfo auth_info = 1;
+}
+
+message CheckConnectionResponse {
+    Status status = 1;
+}
+
+message PingRequest {}
+
+message PingResponse {
+    Status status = 1;
+    string  msg = 2;
+}
+
+message UpdateWorkflowStateRequest {
+    ProjAuthInfo auth_info = 1;
+    string workflow_name = 2;
+    int64 state = 3;
+    int64 target_state = 4;
+    int64 transaction_state = 5;
+    string forked_from_uuid = 6;
+    string uuid = 7;
+    // json string
+    string extra = 8;
+}
+
+message UpdateWorkflowStateResponse {
+    Status status = 1;
+    int64 state = 2;
+    int64 target_state = 3;
+    int64 transaction_state = 4;
+}
+
+message GetWorkflowRequest {
+    ProjAuthInfo auth_info = 1;
+    string workflow_name = 2;
+}
+
+message GetWorkflowResponse{
+    Status status = 1;
+    string name = 2;
+    WorkflowDefinition config = 3;
+    repeated JobDetail jobs = 4;
+
+    int64 state = 5;
+    int64 target_state = 6;
+    int64 transaction_state = 7;
+
+    bool forkable = 8;
+    string forked_from = 9;
+    repeated CreateJobFlag create_job_flags = 10;
+    repeated CreateJobFlag peer_create_job_flags = 11;
+    WorkflowDefinition fork_proposal_config = 12;
+    string uuid = 13;
+    bool metric_is_public = 14;
+}
+
+message UpdateWorkflowRequest {
+    ProjAuthInfo auth_info = 1;
+    string workflow_name = 2;
+    WorkflowDefinition config = 3;
+}
+
+message UpdateWorkflowResponse {
+    Status status = 1;
+    string workflow_name = 2;
+    WorkflowDefinition config = 3;
+}
+
+message GetJobMetricsRequest {
+    ProjAuthInfo auth_info = 1;
+    string job_name = 2;
+}
+
+message GetJobMetricsResponse {
+    Status status = 1;
+    string metrics = 2;
+}
+
+message GetJobEventsRequest {
+    ProjAuthInfo auth_info = 1;
+    string job_name = 2;
+    int64 start_time = 3;
+    int64 max_lines = 4;
+}
+
+message GetJobEventsResponse{
+    Status status = 1;
+    repeated string logs = 2;
+}
+
+message CheckJobReadyRequest {
+    ProjAuthInfo auth_info = 1;
+    string job_name = 2;
+}
+
+message CheckJobReadyResponse {
+    Status status = 1;
+    //is_ready is true when all dependence jobs are complete
+    bool is_ready = 2;
+}
+
+message GetJobKibanaRequest {
+    ProjAuthInfo auth_info = 1;
+    string job_name = 2;
+    string json_args = 3;
+}
+
+message GetJobKibanaResponse {
+    Status status = 1;
+    // metrics is a json-ify list of 2-element lists,
+    // each 2-element list is of [x, y] shape representing a data point.
+    string metrics = 2;
+}
+
+service WebConsoleV2Service {
+    rpc CheckConnection (CheckConnectionRequest) returns (CheckConnectionResponse) {}
+    rpc Ping (PingRequest) returns (PingResponse) {}
+    rpc UpdateWorkflowState (UpdateWorkflowStateRequest) returns (UpdateWorkflowStateResponse) {}
+    rpc GetWorkflow (GetWorkflowRequest) returns (GetWorkflowResponse) {}
+    rpc UpdateWorkflow(UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
+    rpc GetJobMetrics (GetJobMetricsRequest) returns (GetJobMetricsResponse) {}
+    rpc GetJobEvents (GetJobEventsRequest) returns (GetJobEventsResponse) {}
+    rpc CheckJobReady (CheckJobReadyRequest) returns (CheckJobReadyResponse) {}
+    rpc GetJobKibana (GetJobKibanaRequest) returns (GetJobKibanaResponse) {}
+}

@@ -1,0 +1,25 @@
+# Default values for fedlearner-add-on.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+ingress:
+  enabled: true
+  annotations:
+    "nginx.ingress.kubernetes.io/proxy-body-size": 10g
+    "nginx.ingress.kubernetes.io/backend-protocol": GRPC
+    "nginx.ingress.kubernetes.io/http2-insecure-port": "true"
+    "kubernetes.io/ingress.class": nginx
+  host: test.fedlearner.net
+
+tls:
+  enabled: true
+  server:
+    key: certs/server/server.key
+    cert: certs/server/server.pem
+    intermediate: certs/server/intermediate.pem
+    ca: certs/server/root.pem
+  client:
+    key: certs/client/client.key
+    cert: certs/client/client.pem
+    intermediate: certs/client/intermediate.pem
+    ca: certs/client/root.pem
