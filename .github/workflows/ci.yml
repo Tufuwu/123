@@ -8,13 +8,13 @@ on:
 jobs:
   test:
     runs-on: # this agent type is not supported: [[{"dist"=>"Xenial"}]]
-             ubuntu-latest
+             ubuntu-20.04
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
     - uses: actions/setup-python@v5.0.0
       with:
-        python-version: '3.8'
+        python-version: '3.7'
     - run: cd ~/
     - run: wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
     - run: python3 litex_setup.py init install --user
