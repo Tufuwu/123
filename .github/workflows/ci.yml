@@ -1,24 +1,17 @@
-name: Tufuwu/test2
-on:
-  push:
-    branches:
-    - "**/*"
-  pull_request:
+name: ci
+on: push
 
 jobs:
   test:
-    runs-on: # this agent type is not supported: [[{"dist"=>"Xenial"}]]
-             ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.8', '3.9']
     steps:
-    - name: checkout
-      uses: actions/checkout@v4.1.0
-    - uses: actions/setup-python@v5.0.0
-      with:
-        python-version: '3.7'
-    - run: cd ~/
-    - run: wget https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py
-    - run: python3 litex_setup.py init install --user
-    - run: cd ${{ github.workspace }}
-    - run: python3 setup.py install --user
-    - run: cd ${{ github.workspace }}
-    - run: python setup.py test
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r dev-requirements.txt
+      - run: pip install .
+      - run: pytest

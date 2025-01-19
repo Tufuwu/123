@@ -1,10 +1,2 @@
-graft litepcie
-
-include CONTRIBUTORS
-include LICENSE
-
-graft doc
-
-prune bench
-prune examples
-prune test
+include LICENSE CHANGELOG.md README.md
+include requirements.txt
