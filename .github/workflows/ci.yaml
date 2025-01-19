@@ -1,37 +1,22 @@
-name: CI Workflow
-
+name: Tufuwu/test2
 on:
   push:
     branches:
-      - main  # 或其他您希望触发 CI 的分支
+    - "**/*"
   pull_request:
-    branches:
-      - main  # 或其他您希望触发 PR 的分支
 
 jobs:
   test:
     runs-on: ubuntu-20.04
-
     steps:
-      # 1. Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # 2. Set up Python 3.6
-      - name: Set up Python 3.6
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.6'
-
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get -y update
-          sudo apt-get -y install libgmp-dev libmpc-dev libmpfr-dev
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r web_console_v2/api/requirements.txt
-
-      # 4. Run tests
-      - name: Run tests
-        run: bash ./ci/ci_test.sh
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: actions/setup-python@v5.0.0
+      with:
+        python-version: '3.6'
+    - run: sudo apt-get -y update
+    - run: sudo apt-get -y install libgmp-dev libmpc-dev libmpfr-dev
+    - run: pip install --upgrade pip
+    - run: pip install -r requirements.txt
+    - run: pip install -r web_console_v2/api/requirements.txt
+    - run: bash ./ci/ci_test.sh
