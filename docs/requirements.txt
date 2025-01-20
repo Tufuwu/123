@@ -1,0 +1,4 @@
+sphinx==4.4.0
+m2r2
+# nbsphinx
+sphinx-rtd-theme
