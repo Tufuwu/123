@@ -1,58 +1,39 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree.
-
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
-
-[tool.black]
-line-length = 88
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.poetry]
-name = "python-nubia"
-version = "0.3.0"
-description = "A framework for building beautiful shells."
-authors = ["Ahmed Soliman <asoli@fb.com>", "Andreas Backx <andreasbackx@fb.com>"]
-license = "BSD"
-packages = [
-  { include = "nubia" }
-]
-include = ["LICENSE"]
-
-[tool.poetry.dependencies]
-python = "^3.7"
-jellyfish = "^0.8.9"
-prettytable = "^2.4.0"
-prompt-toolkit = "^3.0.23"
-Pygments = "^2.10.0"
-pyparsing = "^2.4.7"
-termcolor = "^1.1.0"
-typing-inspect = "^0.7.1"
-wcwidth = "^0.2.5"
-
-[tool.poetry.dev-dependencies]
-codecov = "^2.1.12"
-nose = "^1.3.7"
-pre-commit = "^2.16.0"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=64.0.0", "setuptools_scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsondiff"
+description = "Diff JSON and JSON-like structures in Python"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+readme = "README.md"
+license= {file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [
+    { name = "Zoomer Analytics LLC", email = "eric.reynolds@zoomeranalytics.com"}
+]
+keywords = ['json', 'diff', 'diffing', 'difference', 'patch', 'delta', 'dict', 'LCS']
+classifiers = [
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3',
+]
+
+[project.urls]
+"Homepage" = "https://github.com/xlwings/jsondiff"
+"Bug Tracker" = "https://github.com/xlwings/jsondiff/issues"
+
+[project.scripts]
+jdiff = "jsondiff.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["jsondiff*"]
+exclude = ["tests*"]
+
+[tool.setuptools.dynamic]
+dependencies = {file=["requirements.txt"]}
+
+[tool.setuptools_scm]
+version_file = "jsondiff/_version.py"
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = {file=["requirements-dev.txt"]}
