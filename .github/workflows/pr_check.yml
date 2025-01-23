@@ -1,8 +1,6 @@
 name: PR Check
 
-on:
-  - pull_request
-  - workflow_dispatch
+on: push
 
 jobs:
   test:
@@ -22,5 +20,5 @@ jobs:
           pip install .[dev]
       - name: Run Tests
         run: |
-        
+
           python -m pytest
