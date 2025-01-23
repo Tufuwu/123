@@ -2,114 +2,76 @@
 
 ## Our Pledge
 
-The Causallib Community is dedicated to our values of treating every individual
-with respect and dignity. In the interest of fostering an open and welcoming
-environment, all participants, including attendees, speakers, sponsors,
-volunteers, online contributors, and IBM employees are expected to show
-courtesy for each other and our community by creating a harassment-free
-experience for everyone, regardless of age, personal appearance, disability,
-ethnicity, gender identity and expression, body size, level of experience,
-nationality, race, religion, caste, or sexual identity and orientation.
-Expected behavior applies to both online and offline engagement within the
-Causallib Community.
-
-## Scope
-
-The purpose of this Code of Conduct is to define and enforce the values and
-conduct of contributors and participants in the Causallib open source community.
-The Code of Conduct applies both within project spaces and in public spaces
-when an individual is engaging with the Causallib open source community. Examples
-include attending a Causallib event, contributing to online projects, commentary
-on Slack, or representing a project or community, including using an official
-project e-mail address, posting via an official social media account, or
-acting as an appointed representative at an online or offline event.
-Representation of a project may be further defined and clarified by project
-maintainers.
+In the interest of fostering an open and welcoming environment, we as
+contributors and maintainers pledge to make participation in our project and
+our community a harassment-free experience for everyone, regardless of age, body
+size, disability, ethnicity, sex characteristics, gender identity and expression,
+level of experience, education, socio-economic status, nationality, personal
+appearance, race, religion, or sexual identity and orientation.
 
 ## Our Standards
 
 Examples of behavior that contributes to creating a positive environment
 include:
 
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints, experiences, and cultures
-- Showing empathy towards other community members
-- Being mindful of your surroundings and your fellow participants and listening
-  to others
-- Valuing the contributions of all participants, acknowledging their time and effort
-- Engaging in collaboration before conflict
-- Pointing out unintentionally racist, sexist, casteist, or biased comments and
-  jokes made by community members when they happen
-- Focusing on what is best for the community
-- Gracefully accepting constructive criticism and apologizing when making a mistake
+* Using welcoming and inclusive language
+* Being respectful of differing viewpoints and experiences
+* Gracefully accepting constructive criticism
+* Focusing on what is best for the community
+* Showing empathy towards other community members
 
-Examples of unacceptable behavior by participants, even when presented as
-"ironic" or "joking," include:
+Examples of unacceptable behavior by participants include:
 
-- The use of sexualized language or imagery and unwelcome physical contact,
-  sexual attention, or advances
-- Trolling, insulting/derogatory comments, and personal or political attacks
-- Public or private harassment, including offensive or degrading language
-- Publishing others' private information, such as a physical or electronic
-  address, without explicit permission. This includes any sort of "outing" of
-  any aspect of someone's identity without their consent.
-- "Doxxing," Publishing screenshots or quotes, especially from identity slack
-  channels, private chat, or public events, without all quoted users' explicit
-  consent.
-- Other conduct which could reasonably be considered inappropriate in a
+* The use of sexualized language or imagery and unwelcome sexual attention or
+  advances
+* Trolling, insulting/derogatory comments, and personal or political attacks
+* Public or private harassment
+* Publishing others' private information, such as a physical or electronic
+  address, without explicit permission
+* Other conduct which could reasonably be considered inappropriate in a
   professional setting
 
-## Responsibilities & Enforcement
+## Our Responsibilities
 
-The entire Causallib community is responsible for upholding the terms of the Code
-of Conduct in Causallib Community events and spaces and reporting violations if
-they see them. The internal Causallib team at IBM is ultimately responsible for
-clarifying the standards of acceptable behavior and enforcement, and is expected
-to take appropriate and fair corrective action in response to any instances of
-unacceptable behavior.
+Project maintainers are responsible for clarifying the standards of acceptable
+behavior and are expected to take appropriate and fair corrective action in
+response to any instances of unacceptable behavior.
 
-If a participant or contributor engages in negative or harmful behavior, IBM
-will take any action they deem appropriate, including but not limited to
-issuing warnings, expulsion from an event with no refund, deleting comments,
-permanent banning from future events or online community, or calling local law
-enforcement. IBM has the right and responsibility to remove, edit, or reject
-comments, commits, code, wiki edits, issues, and other contributions that are
-not aligned to this Code of Conduct, or to temporarily or permanently ban any
-contributor or participant for other behaviors that they deem inappropriate,
+Project maintainers have the right and responsibility to remove, edit, or
+reject comments, commits, code, wiki edits, issues, and other contributions
+that are not aligned to this Code of Conduct, or to ban temporarily or
+permanently any contributor for other behaviors that they deem inappropriate,
 threatening, offensive, or harmful.
 
-If you see a Code of Conduct violation:
+## Scope
 
-1. If you feel comfortable, let the person know that what they did is not
-   appropriate and ask them to stop and/or edit or delete their message(s) or
-   comment(s).
-2. If the person does not immediately stop the behavior or correct the issue,
-   or if you're uncomfortable speaking up, flag a moderator and, if appropriate,
-   fill out the anonymous
-   [Code of Conduct violation form](https://airtable.com/shr29ayYl6gcFIBFF).
-3. The Causallib Community will open an investigation upon receiving your form
-   entry. When reporting, please include any relevant details, links,
-   screenshots, context, or other information that may be used to better
-   understand and resolve the situation.
-4. If the code of conduct violation occurs at an event and requires immediate
-   response or contains a concern about an individual attending an upcoming
-   event, contact the event's on-call Code of Conduct point of contact listed
-   in the event specific code of conduct document. If you don't feel comfortable
-   speaking to the point of contact in person, fill out a Code of Conduct
-   violation form entry and include the details of the event so that the Code of
-   Conduct enforcement board can contact the event's on-call Code of Conduct
-   point of contact.
-5. If an IBM employee witnesses a Code of Conduct violation at any time, such as
-   at events, in a Slack channel, or open source forums, it is their
-   responsibility to file a Code of Conduct violation report.
+This Code of Conduct applies within all project spaces, and it also applies when
+an individual is representing the project or its community in public spaces.
+Examples of representing a project or community include using an official
+project e-mail address, posting via an official social media account, or acting
+as an appointed representative at an online or offline event. Representation of
+a project may be further defined and clarified by project maintainers.
 
-This Code of Conduct does not supersede existing IBM corporate policies, such as
-the IBM Business Conduct Guidelines and IBM Business Partner Code of Conduct.
-IBM employees must follow IBM's Business Conduct Guidelines. IBM's business
-partners must follow the IBM Business Partner Code of Conduct. IBM employees
-concerned with a fellow IBMer's behavior should follow IBM's own internal HR
-reporting protocols, which include engaging the offending IBMer's manager and
-involving IBM Concerns and Appeals. IBM employees concerned with an IBM
-business partner's behavior should notify tellibm@us.ibm.com.
+## Enforcement
 
-_Adapted from [Qiskit](https://github.com/Qiskit/qiskit) Code of Conduct._
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported by contacting the project team at <opensource-conduct@fb.com>. All
+complaints will be reviewed and investigated and will result in a response that
+is deemed necessary and appropriate to the circumstances. The project team is
+obligated to maintain confidentiality with regard to the reporter of an incident.
+Further details of specific enforcement policies may be posted separately.
+
+Project maintainers who do not follow or enforce the Code of Conduct in good
+faith may face temporary or permanent repercussions as determined by other
+members of the project's leadership.
+
+## Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
+available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
+
+[homepage]: https://www.contributor-covenant.org
+
+For answers to common questions about this code of conduct, see
+https://www.contributor-covenant.org/faq
+

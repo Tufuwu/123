@@ -1,124 +1,117 @@
-[![CI Status](https://github.com/BiomedSciAI/causallib/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/BiomedSciAI/causallib/actions/workflows/build.yml)
-[![Code Climate coverage](https://img.shields.io/codeclimate/coverage/BiomedSciAI/causallib?logo=codeclimate)](https://codeclimate.com/github/BiomedSciAI/causallib/test_coverage)
-[![PyPI](https://img.shields.io/pypi/v/causallib?color=blue&logo=pypi&logoColor=yellow)](https://badge.fury.io/py/causallib)
-[![Documentation Status](https://readthedocs.org/projects/causallib/badge/?version=latest)](https://causallib.readthedocs.io/en/latest/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/BiomedSciAI/causallib/HEAD)
-[![Slack channel](https://img.shields.io/badge/join-slack-blue.svg?logo=slack)](https://join.slack.com/t/causallib/shared_invite/zt-mwxnwe1t-htEgAXr3j3T2UeZj61gP6g)
-[![Slack channel](https://img.shields.io/badge/support-slack-blue.svg?logo=slack)](https://causallib.slack.com/)
-[![Downloads](https://static.pepy.tech/badge/causallib)](https://pepy.tech/project/causallib)
-# Causal Inference 360
-A Python package for inferring causal effects from observational data.
+# python-nubia
 
-## Description
-Causal inference analysis enables estimating the causal effect of 
-an intervention on some outcome from real-world non-experimental observational data.  
+This project has been archived, the README below is kept for archiving purposes. See [#88](https://github.com/facebookincubator/python-nubia/issues/88) for more information.
 
-This package provides a suite of causal methods, 
-under a unified scikit-learn-inspired API.
-It implements meta-algorithms that allow plugging in arbitrarily complex machine learning models. 
-This modular approach supports highly-flexible causal modelling.
-The fit-and-predict-like 
-API makes it possible to train on one set of examples 
-and estimate an effect on the other (out-of-bag),
-which allows for a more "honest"<sup>1</sup> effect estimation.
+---
 
-The package also includes an evaluation suite. 
-Since most causal-models utilize machine learning models internally, 
-we can diagnose poor-performing models by re-interpreting known ML evaluations from  a causal perspective.
+[![Support Ukraine](https://img.shields.io/badge/Support-Ukraine-FFD500?style=flat&labelColor=005BBB)](https://opensource.fb.com/support-ukraine)
+![Nubia Build](https://github.com/facebookincubator/python-nubia/workflows/Nubia%20Build/badge.svg)
+[![Coverage](https://codecov.io/gh/facebookincubator/python-nubia/branch/main/graph/badge.svg)](https://codecov.io/github/facebookincubator/python-nubia)
+[![PyPI version](https://badge.fury.io/py/python-nubia.svg)](https://badge.fury.io/py/python-nubia)
 
-If you use the package, please consider citing [Shimoni et al., 2019](https://arxiv.org/abs/1906.00442):
-<details>
-  <summary>Reference</summary>
-  
-```bibtex
-@article{causalevaluations,
-  title={An Evaluation Toolkit to Guide Model Selection and Cohort Definition in Causal Inference},
-  author={Shimoni, Yishai and Karavani, Ehud and Ravid, Sivan and Bak, Peter and Ng, Tan Hung and Alford, Sharon Hensley and Meade, Denise and Goldschmidt, Yaara},
-  journal={arXiv preprint arXiv:1906.00442},
-  year={2019}
-}
+Nubia is a lightweight framework for building command-line applications with Python. It was originally designed for the “logdevice interactive shell (aka. `ldshell`)” at Facebook. Since then it was factored out to be a reusable component and several internal Facebook projects now rely on it as a quick and easy way to get an intuitive shell/cli application without too much boilerplate.
+
+Nubia is built on top of [python-prompt-toolkit](https://github.com/jonathanslenders/python-prompt-toolkit) which is a fantastic toolkit for building interactive command-line applications.
+
+_Disclaimer: Nubia is beta for non-ldshell use-cases. Some of the design decisions might sound odd but they fit the ldshell usecase perfectly. We are continuously making changes to make it more consistent and generic outside of the ldshell use-case. Until a fully stable release is published, use it on your own risk._
+
+See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
+
+If you are curious on the origins of the name, checkout [Nubia on Wikipedia](https://en.wikipedia.org/wiki/Nubia) with its unique and colourful architecture.
+
+## Key Features
+
+* Interactive mode that offers fish-style auto-completion
+* CLI mode that gets generated from your functions and classes.
+* Optional bash/zsh completions via an external utility ‘nubia-complete’ (experimental)
+* A customisable status-bar in interactive mode.
+* An optional IPython-based interactive shell
+* Arguments with underscores are automatically hyphenated
+* Python3 type annotations are used for input type validation
+
+### Interactive mode
+The interactive mode in Nubia is what makes it unique. It is very easy to build a unique shell for your program with zero overhead. The interactive shell in its simplistic form offers automatic completions for commands, sub-commands, arguments, and values. It also offers a great deal of control for developers to take control over  auto-completions, even for commands that do not fall under the typical format. An example is the “select” command in ldshell which is expressed as a SQL-query. We expect that most use cases of Nubia will not need such control and the AutoCommand will be enough without further customisation.
+
+If you start a nubia-based program without a command, it automatically starts an interactive shell. The interactive mode looks like this:
+
+![Interactive Demo](docs/interactive.gif?raw=true "Interactive demo")
+
+### Non-interactive mode
+The CLI mode works exactly like any traditional unix-based command line utility.
+![Non-interactive Demo](docs/non_interactive.png?raw=true "Non-interactive demo")
+
+Have your `@command` decorated function return an `int` to send that value as the Unix return code for your non interactive CLI.
+
+## Examples
+It starts with a function like this:
+```py
+import socket
+import typing
+
+from termcolor import cprint
+from nubia import argument, command, context
+
+@command
+@argument("hosts", description="Hostnames to resolve", aliases=["i"])
+@argument("bad_name", name="nice", description="testing")
+async def lookup(hosts: typing.List[str], bad_name: int) -> int:
+    """
+    This will lookup the hostnames and print the corresponding IP addresses
+    """
+    ctx = context.get_context()
+
+    if not hosts:
+        cprint("No hosts supplied via --hosts")
+        return 1
+
+    print(f"hosts: {hosts}")
+    cprint(f"Verbose? {ctx.verbose}")
+
+    for host in hosts:
+        cprint(f"{host} is {socket.gethostbyname(host)}")
+
+    return 0
 ```
 
--------------
-</details>
+## Requirements
 
-<sup>1</sup> Borrowing [Wager & Athey](https://arxiv.org/abs/1510.04342) terminology of avoiding overfit.  
+Nubia-based applications require Python 3.7+ and works with both Mac OS X or Linux. While in theory it should work on Windows, it has never been tried.
 
+## Installing Nubia
 
-## Installation
+If you are installing nubia for your next project, you should be able to easily use pip for that:
 ```bash
-pip install causallib
+pip install python-nubia
 ```
 
-## Usage
-The package is imported using the name `causallib`.
-Each causal model requires an internal machine-learning model.
-`causallib` supports any model that has a sklearn-like fit-predict API
-(note some models might require a `predict_proba` implementation).
-For example:
-```Python
-from sklearn.linear_model import LogisticRegression
-from causallib.estimation import IPW 
-from causallib.datasets import load_nhefs
+## Building Nubia from source
 
-data = load_nhefs()
-ipw = IPW(LogisticRegression())
-ipw.fit(data.X, data.a)
-potential_outcomes = ipw.estimate_population_outcome(data.X, data.a, data.y)
-effect = ipw.estimate_effect(potential_outcomes[1], potential_outcomes[0])
+```bash
+poetry build
 ```
-Comprehensive Jupyter Notebooks examples can be found in the [examples directory](examples).
 
-### Community support
-We use the Slack workspace at [causallib.slack.com](https://causallib.slack.com/) for informal communication.
-We encourage you to ask questions regarding causal-inference modelling or 
-usage of causallib that don't necessarily merit opening an issue on Github.  
+## Running example in virtualenv:
 
-Use this [invite link to join causallib on Slack](https://join.slack.com/t/causallib/shared_invite/zt-mwxnwe1t-htEgAXr3j3T2UeZj61gP6g). 
+_We recommend setting up a separate Python environment using a tool like virtualenv, pyenv-virtualenv, or `poetry shell`._
 
-### Approach to causal-inference
-Some key points on how we address causal-inference estimation
 
-##### 1. Emphasis on potential outcome prediction  
-Causal effect may be the desired outcome. 
-However, every effect is defined by two potential (counterfactual) outcomes. 
-We adopt this two-step approach by separating the effect-estimating step 
-from the potential-outcome-prediction step. 
-A beneficial consequence to this approach is that it better supports 
-multi-treatment problems where "effect" is not well-defined.
+If you would like to run the example, install the dependencies and run the example module as a script.
 
-##### 2. Stratified average treatment effect
-The causal inference literature devotes special attention to the population 
-on which the effect is estimated on.
-For example, ATE (average treatment effect on the entire sample),
-ATT (average treatment effect on the treated), etc. 
-By allowing out-of-bag estimation, we leave this specification to the user.
-For example, ATE is achieved by `model.estimate_population_outcome(X, a)`
-and ATT is done by stratifying on the treated: `model.estimate_population_outcome(X.loc[a==1], a.loc[a==1])`
+```bash
+poetry install
+cd example
+python -m nubia_example
+```
 
-##### 3. Families of causal inference models
-We distinguish between two types of models:
-* *Weight models*: weight the data to balance between the treatment and control groups, 
-   and then estimates the potential outcome by using a weighted average of the observed outcome. 
-   Inverse Probability of Treatment Weighting (IPW or IPTW) is the most known example of such models. 
-* *Direct outcome models*: uses the covariates (features) and treatment assignment to build a
-   model that predicts the outcome directly. The model can then be used to predict the outcome
-   under any assignment of treatment values, specifically the potential-outcome under assignment of
-   all controls or all treated.  
-   These models are usually known as *Standardization* models, and it should be noted that, currently,
-   they are the only ones able to generate *individual effect estimation* (otherwise known as CATE).
+To run the unit tests:
 
-##### 4. Confounders and DAGs
-One of the most important steps in causal inference analysis is to have 
-proper selection on both dimensions of the data to avoid introducing bias:
-* On rows: thoughtfully choosing the right inclusion\exclusion criteria 
-  for individuals in the data. 
-* On columns: thoughtfully choosing what covariates (features) act as confounders 
-  and should be included in the analysis.
+```bash
+poetry run nosetests
+```
 
-This is a place where domain expert knowledge is required and cannot be fully and truly automated
-by algorithms. 
-This package assumes that the data provided to the model fit the criteria. 
-However, filtering can be applied in real-time using a scikit-learn pipeline estimator
-that chains preprocessing steps (that can filter rows and select columns) with a causal model at the end.
+## Getting Started
 
+See the [getting started](GETTING_STARTED.md) guide to learn how to build a simple application with Nubia.
+
+## License
+python-nubia is BSD licensed, as found in the LICENSE file.
