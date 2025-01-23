@@ -10,26 +10,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latesd
     
     strategy:
       matrix:
-        python-version: [2.7, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7]
-        include:
-          - python-version: 2.7
-            dist: trusty
-          - python-version: 3.2
-            dist: trusty
-          - python-version: 3.3
-            dist: trusty
-          - python-version: 3.4
-            dist: xenial
-          - python-version: 3.5
-            dist: xenial
-          - python-version: 3.6
-            dist: xenial
-          - python-version: 3.7
-            dist: xenial
+        python-version: [3.8,3.9,3.10,3.11]
+
 
     steps:
       - name: Checkout code
